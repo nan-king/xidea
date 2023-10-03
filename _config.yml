@@ -2,8 +2,11 @@ theme: jekyll-theme-architect
 title: 经典自读
 description: 道可道也非恒道也，名可名也非恒名也
 chapters: 
-  - 逍遥游
-  - 清静经
-  - 心经
+  - name: 逍遥游
+    path: /xiaoyaoyou/
+  - name: 清静经
+    path: /qingjing/
+  - name: 心经
+    path: /xingjing/
 
 
