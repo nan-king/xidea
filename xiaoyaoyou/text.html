@@ -1,0 +1,181 @@
+<meta charset='utf-8'>
+<script src="text.js"></script>
+<script>
+let lines = source.split(/[\r\n]+/);
+let entries = [[]];
+let anchors = []
+for(let line of lines){
+	if(line.charAt(0) == '#'){
+		anchors.push([entries.length-1,line]);
+	}else if(line.match(/\S/)){
+		let entry = entries[entries.length-1];
+		if(entry.length<3){
+			entry.push(line);
+		}else{
+			entries.push([line])
+		}
+	}
+	
+}
+
+let anchorDir = [];
+for(var [id,name] of anchors){
+	let h = 'h'+name.replace(/^(#+).*/,'$1').length;
+	name = name.replace(/#+/,'');
+	
+	name = `<${h}><a href="#${id}">${name}</a></${h}>`;
+	
+
+	anchorDir.push(name)
+}
+setTimeout(()=>document.getElementById('anchorDir').innerHTML = anchorDir.join(''),1)
+var html = entries.map((entry,index) =>{
+	///[\u4E00-\u9FA5]/.test(line)
+	let space = entry[0].replace(/\t/g,'    ').replace(/[ ]{1,2}([“‘])/,"$1").replace(/[\S].+/g,'').length;
+	//console.log(entry)
+	let pinyin = entry[0].replace(/[ \t]*([，。《》：:.；‘’“”『』「」？？])[ \t]*/g,' $1 ').replace(/^[\s]+|[\s]+$/g,'');
+	let hanzi = entry[1].replace(/^[\s]+|[\s]+$/g,'');
+	let desc = entry[2].replace(/^[\s]+/g,'');
+	let descClass = ''
+	if(desc.charAt() =='?'){
+		desc = desc.slice(1);
+		descClass = ' desc-warn';
+	}
+	let wl = [pinyin.split(/\s+/).length , hanzi.split('').length];
+	if(wl[0] != wl[1]){//异常拼音
+		console.error([pinyin,hanzi,wl]);
+	}
+	return `<div class="block" style="padding-left:${space*10}px" >
+				<a name="${index}"></a>
+				<div class="pinyin">
+					${pinyin.replace(/([\S]+)\s*/g,'<span>$1</span>').replace(/[̄́̌̀]/g,'<b>$&</b>')}
+				</div>
+				<div class="hanzi">${hanzi.replace(/[\S]/g,'<span>$&</span>')}</div>
+				<div class="desc ${descClass}">${desc}</div>
+			</div>
+	`.replace(/>\s+</g,'><')
+	
+	
+
+}).filter(line=>!!line);
+document.write(html.join(''))
+</script>
+<p>个人观点与主流论述差异：<br/>
+1. 大鹏飞行原理论述（野马，尘埃取本义，类比大鹏起飞激起大风， 借助大风的反作用力，托起大鹏（生物以息相吹，生：大鹏，物：外接环境，息：风）。）<br/>
+2. 德合一君，而征一国者 论述。个人认为 其与前句：『故夫知效一官，行比一乡』 形成一大一小，和上一段大小之辩呼应。<br/>
+3. 无名 无功 无己 论述（宋荣子：圣人，不求名，但求功。列子： 神人，不求功，能力有限，未达天人合一之境，尚不足以逍遥）。<br/>
+学鸠之笑：<br/>
+1. 引出 无名 无功 无己<br/>
+2. 俗人不理解无名，无功，无己，不就像学鸠不懂高飞一样吗？高度不够。</p>
+<div id="anchorDir">
+	1111
+	34343
+</div>
+<style>
+@media print{
+.block{
+	page-break-inside:avoid;
+}
+.block:nth-child(5n){
+	--color:red;
+	--page-break-after: always;
+}
+#anchorDir{
+	display:none;
+}
+}
+
+</style>
+<style>
+body{
+	margin:20px 30px;
+}
+pre,p{
+	margin:0px;
+	--color:#e66;
+	font-size:14px;
+	font-style: italic;
+	background: #ff9;
+	--background: #ddd;
+}
+#anchorDir{
+	position:fixed;
+	right:5px;
+	top:5px;
+	width:220px;
+	opacity:.2;
+	background:rgba(200,200,255,.5);
+}
+#anchorDir h1{
+	padding:1px;
+	margin:6px;
+	font-size:18px;
+}
+#anchorDir h2,#anchorDir h3{
+	margin:2px;
+	margin-left:12px;
+	font-size:10px;
+}
+#anchorDir:hover{
+	background:rgba(200,200,255,1);
+	opacity:1;
+}
+#anchorDir a{
+	color:#666;
+}
+.error{
+	color:red;
+}
+
+.block{
+	--float:left;
+	width:1024px;
+	--height:49.6px;
+}
+.hanzi{
+	font-size: 28px;
+}
+.hanzi span,.pinyin span{
+	-- outline:1px solid red;
+	display:inline;
+	width:28px;
+	font-family: "PingFang SC",'Microsoft Yahei', 'Hiragino Sans GB';
+	padding:0px;
+	---overflow: auto;
+}
+.pinyin span{
+	display:inline-block
+}
+
+.block .desc{
+	display:block;
+	text-indent: 6px;
+	background: #ffe;
+	--background: #eee;
+	font-size:12px;
+	color:#999;
+	padding-bottom:12px;
+}
+.block div.desc-warn{
+	color:black;
+	color:#e66;
+	font-style: italic;
+}
+.pinyin span{
+	line-height: 12px;
+	font-size:10px;
+	text-align: center;
+}
+.pinyin span:nth-child(0){
+	margin-left:-0px;
+}
+
+.pinyin{
+
+	border: 0px solid red;
+	font-size: 10px;
+}
+.pinyin b{
+	margin-left:0px;
+}
+</style>
