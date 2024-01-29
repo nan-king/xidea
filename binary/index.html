@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten-Generated Code</title>
+    </head>
+    <body id="drop-area">
+    <script type="text/javascript" src="lib.js"></script>
+
+    <script>
+      // run();
+    //console.log(_otsu_binarize)
+    //console.log(_otsu_binarize())
+    </script>
+    <style>
+canvas{
+  border:1px solid #ccc;
+}
+#drop-area {
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+}
+#drop-area.hover {
+  border: 4px dashed #e6f;
+  
+}
+    </style>
+<input type="file" id="image-input" accept="image/*" style="display:none" />
+<fieldset>
+<legend>原图</legend>
+ <canvas id="image-canvas"></canvas></fieldset>
+ <fieldset>
+  <legend>灰度</legend><canvas id="grayscale-canvas"></canvas>
+ </fieldset>
+ <fieldset>
+  <legend>二值化</legend>
+    <canvas id="grayscale-canvas1"></canvas>
+    <canvas id="grayscale-canvas2"></canvas>
+    <canvas id="grayscale-canvas3"></canvas>
+    <canvas id="grayscale-canvas4"></canvas>
+ </fieldset>
+<script>
+document.getElementById('image-input').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    file && processImage (file)
+});
+document.addEventListener('dragover', function(event) {
+    event.preventDefault();
+});
+document.addEventListener('drop', function(event) {
+    event.preventDefault();
+});
+
+const dropArea = document.body;// document.getElementById('drop-area');
+
+dropArea.addEventListener('dragenter', function(event) {
+    dropArea.classList.add('hover');
+});
+
+dropArea.addEventListener('dragover', function(event) {
+    dropArea.classList.remove('hover');
+    dropArea.classList.add('hover');
+});
+dropArea.addEventListener('dragleave', function(event) {
+    dropArea.classList.remove('hover');
+});
+
+dropArea.addEventListener('drop', function(event) {
+    const file = event.dataTransfer.files[0];
+    processImage(file);
+    dropArea.classList.remove('hover');
+});
+
+
+
+function processImage (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                // 获取Canvas元素并设置尺寸与图像一致
+                const canvas = document.getElementById('image-canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // 将图像绘制到Canvas上
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+
+                // 获取图像的像素数据
+                const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                const data = imageData.data;
+
+                // 创建灰度矩阵并设置灰度图像的像素数据
+                const grayscaleData = ctx.createImageData(img.width, img.height);
+                const grayPtr = _malloc(img.width* img.height);
+                const destPtr = _malloc(img.width* img.height);
+                // const grayList =HEAP8;
+                for (let i = 0; i < data.length; i += 4) {
+                    // 计算灰度值
+                    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                    // 设置灰度图像的像素数据
+                    HEAP8[grayPtr+(i>>2)] = (gray & 0xff);
+                    grayscaleData.data[i] = gray;
+                    grayscaleData.data[i + 1] = gray;
+                    grayscaleData.data[i + 2] = gray;
+                    grayscaleData.data[i + 3] = 255; // alpha值保持不变
+                }
+
+
+                const grayscaleCanvas = document.getElementById('grayscale-canvas');
+                grayscaleCanvas.width = img.width;
+                grayscaleCanvas.height = img.height;
+
+                // 将灰度图像数据写入第二个Canvas
+                const grayscaleCtx = grayscaleCanvas.getContext('2d');
+                grayscaleCtx.putImageData(grayscaleData, 0, 0);
+
+               
+                doBinarize(img,"grayscale-canvas1",_otsu_binarize,grayPtr,destPtr);
+                doBinarize(img,'grayscale-canvas2',_zbar_binarize,grayPtr,destPtr);
+                doBinarize(img,'grayscale-canvas3',_zxing_binarize,grayPtr,destPtr);
+                doBinarize(img,'grayscale-canvas4',_block_binarize,grayPtr,destPtr);
+                _free(grayPtr);
+                _free(destPtr)
+
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function doBinarize(img,el,binarize_impl,grayPtr,destPtr){
+      const grayscaleCanvas2 = document.getElementById(el)
+      const resultPtr = binarize_impl(grayPtr,destPtr,img.width, img.height)
+
+      grayscaleCanvas2.width = img.width;
+      grayscaleCanvas2.height = img.height;
+      const grayscaleCtx2 = grayscaleCanvas2.getContext('2d');
+      // 获取第二个Canvas元素并设置尺寸与图像一致
+      const grayscaleData2 = grayscaleCtx2.createImageData(img.width, img.height);
+      const data = grayscaleData2.data;
+      for (let i = 0; i < data.length; i += 4) {
+          let gray = HEAP8[resultPtr+(i>>>2)]?0:0xff;
+          // console.log(gray)
+          data[i] = gray;
+          data[i + 1] = gray;
+          data[i + 2] = gray;
+          data[i + 3] = 255; // alpha值保持不变
+      }
+
+
+      grayscaleCtx2.putImageData(grayscaleData2, 0, 0);
+    }
+</script>
+
+</body>
+</html>
