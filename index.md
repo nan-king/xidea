@@ -1,6 +1,6 @@
 #### 序：
 <pre class="preface">
-有物混成，先天地生
+有物混成，先天地生。
 </pre>
 
 ## [{{ site.chapters[0].name }}]({{ site.chapters[0].path }})
