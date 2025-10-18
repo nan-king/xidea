@@ -13,8 +13,8 @@ console.log(list)
 
 		var source = fs.readFileSync(f).toString();
 		//console.log(source)
-		let source2 = source.replace('<script src="///lite/codemirror/o.js"></script>',
-				'<script src="//lite/codemirror/o.js"></script>')
+		let source2 = source.replace('<script src="//lite/codemirror/o.js"></script>',
+				'<script src="/lite/codemirror/o.js"></script>')
 		console.log(file,source2.length-source.length)
 		fs.writeFileSync(file,source2);
 	}
