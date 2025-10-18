@@ -1,9 +1,40 @@
-require('lite/test/run')
-console.log('start....')
-var path = require('path');
-var uglifyjs = require('uglifyjs');
+
+
+
 var fs = require('fs');
 
+var list = fs.readdirSync('./');
+
+var path = require('path');
+console.log(list)
+ list.map(function(f){
+	var file =  path.join(__dirname,f)
+	if(/.html$/.test(f)){
+
+		var source = fs.readFileSync(f).toString();
+		//console.log(source)
+		let source2 = source.replace('<script src="http://www.xidea.org/lite/codemirror/o.js"></script>',
+				'<script src="///lite/codemirror/o.js"></script>')
+		console.log(file,source2.length-source.length)
+		fs.writeFileSync(file,source2);
+	}
+	
+
+	//
+
+	return '';
+	//console.log(s)
+
+})
+
+
+
+return;
+
+
+require('lite/test/run')
+console.log('start....')
+var uglifyjs = require('uglifyjs');
 console.log('step:1')
 /*
 var codemirror = path.join(__dirname,'codemirror')
